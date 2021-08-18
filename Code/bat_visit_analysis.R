@@ -1,6 +1,6 @@
 # Code for "Seasonality of bats' date palm sap feeding behavior in an area of Bangladesh associated with Nipah virus spillover"
 # Code author: Clif McKee
-# Works as of: 27 July 2021
+# Works as of: 18 August 2021
 # R version: 4.1.0 "Camp Pontanezen"
 
 #####################
@@ -769,10 +769,13 @@ ggsave("./Results/observed_season_mean_bat_visits.tiff",
 ## Plots for raw data analysis: sum of bat visits by month
 
 # Subplot for Pteropus sum of visits
-obs_month_sum_visitsA <- ggplot(infra_day_spread, aes(x = as.factor(month), y = Pteropus,
-                                                      fill = Month_Season, group = 1)) +
-  # Bar plot for sum of visits by month
-  stat_summary(fun = "sum", na.rm = TRUE, geom = "col", width = 0.5) +
+obs_month_sum_visitsA <- infra_day_spread %>%
+  group_by(month, Month_Season) %>%
+  summarize(sum_visits = sum(Pteropus)) %>%
+  # Bar plot for sum of visits by month, with labels
+  ggplot() +
+  geom_col(aes(x = as.factor(month), y = sum_visits, fill = Month_Season), width = 0.5) +
+  geom_text(aes(x = as.factor(month), y = sum_visits + (300/25), label = sum_visits), size = 3) +
   # Rename numbered months as abbreviated names
   scale_x_discrete(name = "Month", labels = c("Jan", "Feb", "Mar", "Apr", "May", "Jun",
                                               "Jul", "Aug", "Sep", "Oct", "Nov", "Dec")) +
@@ -795,10 +798,13 @@ obs_month_sum_visitsA <- ggplot(infra_day_spread, aes(x = as.factor(month), y = 
         legend.direction = "horizontal")
 
 # Subplot for non-Pteropus sum of visits
-obs_month_sum_visitsB <- ggplot(infra_day_spread, aes(x = as.factor(month), y = non_Pteropus,
-                                                      fill = Month_Season, group = 1)) +
-  # Bar plot for sum of visits by month
-  stat_summary(fun = "sum", na.rm = TRUE, geom = "col", width = 0.5) +
+obs_month_sum_visitsB <- infra_day_spread %>%
+  group_by(month, Month_Season) %>%
+  summarize(sum_visits = sum(non_Pteropus)) %>%
+  # Bar plot for sum of visits by month, with labels
+  ggplot() +
+  geom_col(aes(x = as.factor(month), y = sum_visits, fill = Month_Season), width = 0.5) +
+  geom_text(aes(x = as.factor(month), y = sum_visits + (15000/25), label = sum_visits), size = 3) +
   # Rename numbered months as abbreviated names
   scale_x_discrete(name = "Month", labels = c("Jan", "Feb", "Mar", "Apr", "May", "Jun",
                                               "Jul", "Aug", "Sep", "Oct", "Nov", "Dec")) +
@@ -837,10 +843,13 @@ ggsave("./Results/observed_month_sum_bat_visits.tiff",
 ## Plots for raw data analysis: sum of bat visits by season
 
 # Subplot for Pteropus sum of visits
-obs_season_sum_visitsA <- ggplot(infra_day_spread, aes(x = as.factor(Month_Season), y = Pteropus,
-                                                       fill = Month_Season, group = 1)) +
-  # Bar plot for sum of visits by season
-  stat_summary(fun = "sum", na.rm = TRUE, geom = "col", width = 0.5) +
+obs_season_sum_visitsA <- infra_day_spread %>%
+  group_by(Month_Season) %>%
+  summarize(sum_visits = sum(Pteropus)) %>%
+  # Bar plot for sum of visits by season, with labels
+  ggplot() +
+  geom_col(aes(x = as.factor(Month_Season), y = sum_visits, fill = Month_Season), width = 0.5) +
+  geom_text(aes(x = as.factor(Month_Season), y = sum_visits + (500/25), label = sum_visits), size = 3) +
   # Rename seasons
   scale_x_discrete(name = "Season", limits = c("Winter", "Spring", "Monsoon", "Postmonsoon"),
                    labels = c("winter", "spring", "monsoon", "post-monsoon")) +
@@ -861,10 +870,13 @@ obs_season_sum_visitsA <- ggplot(infra_day_spread, aes(x = as.factor(Month_Seaso
         legend.position = "none")
 
 # Subplot for non-Pteropus sum of visits
-obs_season_sum_visitsB <- ggplot(infra_day_spread, aes(x = as.factor(Month_Season), y = non_Pteropus,
-                                                       fill = Month_Season, group = 1)) +
-  # Bar plot for sum of visits by season
-  stat_summary(fun = "sum", na.rm = TRUE, geom = "col", width = 0.5) +
+obs_season_sum_visitsB <- infra_day_spread %>%
+  group_by(Month_Season) %>%
+  summarize(sum_visits = sum(non_Pteropus)) %>%
+  # Bar plot for sum of visits by season, with labels
+  ggplot() +
+  geom_col(aes(x = as.factor(Month_Season), y = sum_visits, fill = Month_Season), width = 0.5) +
+  geom_text(aes(x = as.factor(Month_Season), y = sum_visits + (25000/25), label = sum_visits), size = 3) +
   # Rename seasons
   scale_x_discrete(name = "Season", limits = c("Winter", "Spring", "Monsoon", "Postmonsoon"),
                    labels = c("winter", "spring", "monsoon", "post-monsoon")) +
@@ -1266,11 +1278,14 @@ ggsave("./Results/observed_season_bat_visit_duration.tiff",
 ## Plots for raw data analysis: cumulative visit durations by month
 
 # Subplot for Pteropus cumulative duration
-obs_month_sum_durstayA <- ggplot(infra_stay %>% filter(pnp == "Pteropus"),
-                                 aes(x = month(as.Date(dtobs, format = "%m/%d/%Y")), y = durStay, fill = Month_Season,
-                                     group = month(as.Date(dtobs, format = "%m/%d/%Y")))) +
-  # Bar plot for sum of visits by month
-  stat_summary(fun = "sum", na.rm = TRUE, geom = "col", width = 0.5) +
+obs_month_sum_durstayA <- infra_stay %>%
+  filter(pnp == "Pteropus") %>%
+  group_by(month = month(as.Date(dtobs, format = "%m/%d/%Y")), Month_Season) %>%
+  summarize(cum_duration = sum(durStay)) %>%
+  # Bar plot for cumulative duration of visits by month, with labels
+  ggplot() +
+  geom_col(aes(x = month, y = cum_duration, fill = Month_Season), width = 0.5) +
+  geom_text(aes(x = month, y = cum_duration + (300000/25), label = cum_duration), size = 3) +
   # Rename numbered months as abbreviated names
   scale_x_continuous(name = "Month",
                    breaks = seq(1, 12, 1),
@@ -1295,11 +1310,16 @@ obs_month_sum_durstayA <- ggplot(infra_stay %>% filter(pnp == "Pteropus"),
         legend.direction = "horizontal")
 
 # Subplot for non-Pteropus cumulative duration
-obs_month_sum_durstayB <- ggplot(infra_stay %>% filter(pnp == "Non-pteropus"),
-                                 aes(x = month(as.Date(dtobs, format = "%m/%d/%Y")), y = durStay, fill = Month_Season,
-                                     group = month(as.Date(dtobs, format = "%m/%d/%Y")))) +
-  # Bar plot for sum of visits by month
-  stat_summary(fun = "sum", na.rm = TRUE, geom = "col", width = 0.5) +
+obs_month_sum_durstayB <- infra_stay %>%
+  filter(pnp == "Non-pteropus") %>%
+  group_by(month = month(as.Date(dtobs, format = "%m/%d/%Y")), Month_Season) %>%
+  summarize(cum_duration = sum(durStay)) %>%
+  ungroup() %>%
+  add_row(month = 6, Month_Season = "Monsoon", cum_duration = 0) %>%
+  # Bar plot for cumulative duration of visits by month, with labels
+  ggplot() +
+  geom_col(aes(x = month, y = cum_duration, fill = Month_Season), width = 0.5) +
+  geom_text(aes(x = month, y = cum_duration + (500000/25), label = cum_duration), size = 3) +
   # Rename numbered months as abbreviated names
   scale_x_continuous(name = "Month",
                      breaks = seq(1, 12, 1),
@@ -1340,10 +1360,14 @@ ggsave("./Results/observed_month_cumulative_bat_visit_duration.tiff",
 ## Plots for raw data analysis: cumulative visit durations by season
 
 # Subplot for Pteropus cumulative duration
-obs_season_sum_durstayA <- ggplot(infra_stay %>% filter(pnp == "Pteropus"),
-                                  aes(x = as.factor(Month_Season), y = durStay, fill = Month_Season)) +
-  # Bar plot for sum of visits by month
-  stat_summary(fun = "sum", na.rm = TRUE, geom = "col", width = 0.5) +
+obs_season_sum_durstayA <- infra_stay %>%
+  filter(pnp == "Pteropus") %>%
+  group_by(Month_Season) %>%
+  summarize(cum_duration = sum(durStay)) %>%
+  # Bar plot for cumulative duration of visits by season, with labels
+  ggplot() +
+  geom_col(aes(x = as.factor(Month_Season), y = cum_duration, fill = Month_Season), width = 0.5) +
+  geom_text(aes(x = as.factor(Month_Season), y = cum_duration + (400000/25), label = cum_duration), size = 3) +
   # Rename seasons
   scale_x_discrete(name = "Season", limits = c("Winter", "Spring", "Monsoon", "Postmonsoon"),
                    labels = c("winter", "spring", "monsoon", "post-monsoon")) +
@@ -1364,10 +1388,14 @@ obs_season_sum_durstayA <- ggplot(infra_stay %>% filter(pnp == "Pteropus"),
         legend.position = "none")
 
 # Subplot for non-Pteropus cumulative duration
-obs_season_sum_durstayB <- ggplot(infra_stay %>% filter(pnp == "Non-pteropus"),
-                                  aes(x = as.factor(Month_Season), y = durStay, fill = Month_Season)) +
-  # Bar plot for sum of visits by month
-  stat_summary(fun = "sum", na.rm = TRUE, geom = "col", width = 0.5) +
+obs_season_sum_durstayB <- infra_stay %>%
+  filter(pnp == "Non-pteropus") %>%
+  group_by(Month_Season) %>%
+  summarize(cum_duration = sum(durStay)) %>%
+  # Bar plot for cumulative duration of visits by season, with labels
+  ggplot() +
+  geom_col(aes(x = as.factor(Month_Season), y = cum_duration, fill = Month_Season), width = 0.5) +
+  geom_text(aes(x = as.factor(Month_Season), y = cum_duration + (800000/25), label = cum_duration), size = 3) +
   # Rename seasons
   scale_x_discrete(name = "Season", limits = c("Winter", "Spring", "Monsoon", "Postmonsoon"),
                    labels = c("winter", "spring", "monsoon", "post-monsoon")) +
@@ -1582,11 +1610,14 @@ ggsave("./Results/observed_season_bat_sap_contact_duration.tiff",
 ## Plots for raw data analysis: cumulative sap contact durations by month
 
 # Subplot for Pteropus cumulative duration
-obs_month_sum_durcontA <- ggplot(infra_cont %>% filter(pnp == "Pteropus"),
-                                 aes(x = month(as.Date(dtobs, format = "%m/%d/%Y")), y = durCont,
-                                     fill = Month_Season, group = month(as.Date(dtobs, format = "%m/%d/%Y")))) +
-  # Bar plot for sum of sap contacts by month
-  stat_summary(fun = "sum", na.rm = TRUE, geom = "col", width = 0.5) +
+obs_month_sum_durcontA <- infra_stay %>%
+  filter(pnp == "Pteropus") %>%
+  group_by(month = month(as.Date(dtobs, format = "%m/%d/%Y")), Month_Season) %>%
+  summarize(cum_contact = sum(durCont)) %>%
+  # Bar plot for cumulative duration of sap contacts by month, with labels
+  ggplot() +
+  geom_col(aes(x = month, y = cum_contact, fill = Month_Season), width = 0.5) +
+  geom_text(aes(x = month, y = cum_contact + (30000/25), label = cum_contact), size = 3) +
   # Rename numbered months as abbreviated names
   scale_x_continuous(name = "Month",
                      breaks = seq(1, 12, 1),
@@ -1611,11 +1642,16 @@ obs_month_sum_durcontA <- ggplot(infra_cont %>% filter(pnp == "Pteropus"),
         legend.direction = "horizontal")
 
 # Subplot for non-Pteropus cumulative duration
-obs_month_sum_durcontB <- ggplot(infra_cont %>% filter(pnp == "Non-pteropus"),
-                                 aes(x = month(as.Date(dtobs, format = "%m/%d/%Y")), y = durCont,
-                                     fill = Month_Season, group = month(as.Date(dtobs, format = "%m/%d/%Y")))) +
-  # Bar plot for sum of sap contacts by month
-  stat_summary(fun = "sum", na.rm = TRUE, geom = "col", width = 0.5) +
+obs_month_sum_durcontB <- infra_stay %>%
+  filter(pnp == "Non-pteropus") %>%
+  group_by(month = month(as.Date(dtobs, format = "%m/%d/%Y")), Month_Season) %>%
+  summarize(cum_contact = sum(durCont)) %>%
+  ungroup() %>%
+  add_row(month = 6, Month_Season = "Monsoon", cum_contact = 0) %>%
+  # Bar plot for cumulative duration of sap contacts by month, with labels
+  ggplot() +
+  geom_col(aes(x = month, y = cum_contact, fill = Month_Season), width = 0.5) +
+  geom_text(aes(x = month, y = cum_contact + (500000/25), label = cum_contact), size = 3) +
   # Rename numbered months as abbreviated names
   scale_x_continuous(name = "Month",
                      breaks = seq(1, 12, 1),
@@ -1656,11 +1692,14 @@ ggsave("./Results/observed_month_cumulative_bat_sap_contact_duration.tiff",
 ## Plots for raw data analysis: cumulative sap contact durations by season
 
 # Subplot for Pteropus cumulative duration
-obs_season_sum_durcontA <- ggplot(infra_cont %>% filter(pnp == "Pteropus"),
-                                  aes(x = as.factor(Month_Season), y = durCont,
-                                      fill = Month_Season)) +
-  # Bar plot for sum of sap contacts by month
-  stat_summary(fun = "sum", na.rm = TRUE, geom = "col", width = 0.5) +
+obs_season_sum_durcontA <- infra_stay %>%
+  filter(pnp == "Pteropus") %>%
+  group_by(Month_Season) %>%
+  summarize(cum_contact = sum(durCont)) %>%
+  # Bar plot for cumulative duration of sap contacts by season, with labels
+  ggplot() +
+  geom_col(aes(x = as.factor(Month_Season), y = cum_contact, fill = Month_Season), width = 0.5) +
+  geom_text(aes(x = as.factor(Month_Season), y = cum_contact + (60000/25), label = cum_contact), size = 3) +
   # Rename seasons
   scale_x_discrete(name = "Season", limits = c("Winter", "Spring", "Monsoon", "Postmonsoon"),
                    labels = c("winter", "spring", "monsoon", "post-monsoon")) +
@@ -1681,11 +1720,14 @@ obs_season_sum_durcontA <- ggplot(infra_cont %>% filter(pnp == "Pteropus"),
         legend.position = "none")
 
 # Subplot for non-Pteropus cumulative duration
-obs_season_sum_durcontB <- ggplot(infra_cont %>% filter(pnp == "Non-pteropus"),
-                                  aes(x = as.factor(Month_Season), y = durCont,
-                                      fill = Month_Season)) +
-  # Bar plot for sum of sap contacts by month
-  stat_summary(fun = "sum", na.rm = TRUE, geom = "col", width = 0.5) +
+obs_season_sum_durcontB <- infra_stay %>%
+  filter(pnp == "Non-pteropus") %>%
+  group_by(Month_Season) %>%
+  summarize(cum_contact = sum(durCont)) %>%
+  # Bar plot for cumulative duration of sap contacts by season, with labels
+  ggplot() +
+  geom_col(aes(x = as.factor(Month_Season), y = cum_contact, fill = Month_Season), width = 0.5) +
+  geom_text(aes(x = as.factor(Month_Season), y = cum_contact + (800000/25), label = cum_contact), size = 3) +
   # Rename seasons
   scale_x_discrete(name = "Season", limits = c("Winter", "Spring", "Monsoon", "Postmonsoon"),
                    labels = c("winter", "spring", "monsoon", "post-monsoon")) +
